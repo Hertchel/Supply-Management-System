@@ -154,14 +154,17 @@ elif ENVIRONMENT == 'test':
 else:
     DATABASES = {
         'default': {
-            'ENGINE': 'django_tidb',  # TiDB compatible
-            'HOST': os.getenv('TIDB_HOST'),
-            'PORT': int(os.getenv('TIDB_PORT', 4000)),
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('TIDB_DB_NAME'),
             'USER': os.getenv('TIDB_USER'),
             'PASSWORD': os.getenv('TIDB_PASSWORD'),
-            'NAME': os.getenv('TIDB_DB_NAME'),
+            'HOST': os.getenv('TIDB_HOST'),
+            'PORT': int(os.getenv('TIDB_PORT', 4000)),
             'OPTIONS': {
                 'charset': 'utf8mb4',
+                'ssl': {
+                    'ca': os.getenv('TIDB_CA_PATH'),
+                },
             },
         }
     }
