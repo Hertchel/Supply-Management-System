@@ -40,10 +40,10 @@ SIMPLE_JWT = {
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_COOKIE': 'access_token',
     'AUTH_COOKIE_HTTP_ONLY': True,
-    'AUTH_COOKIE_SECURE': True,
+    'AUTH_COOKIE_SECURE': os.getenv('AUTH_COOKIE_SECURE', 'False').lower() in ['true', '1', 't'],
     'AUTH_COOKIE_SAMESITE': 'Strict',
-    'CSRF_COOKIE_SECURE': True,
-    'SESSION_COOKIE_SECURE': True,
+    'CSRF_COOKIE_SECURE': os.getenv('CSRF_COOKIE_SECURE', 'False').lower() in ['true', '1', 't'],
+    'SESSION_COOKIE_SECURE': os.getenv('SESSION_COOKIE_SECURE', 'False').lower() in ['true', '1', 't'],
 }
 
 CORS_ALLOW_CREDENTIALS = True
@@ -85,11 +85,11 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
@@ -121,10 +121,10 @@ IS_USER_ACTIVATION_ENABLED = os.getenv('IS_USER_ACTIVATION_ENABLED', 'True').low
 
 print(f'\nRunning in {ENVIRONMENT} Mode.\n')
 
-# Default empty DB
+# Database Configuration
 DATABASES = {'default': {}}
 
-# Local/PostgreSQL (development)
+# Local PostgreSQL (development)
 if IS_LOCALHOST or ENVIRONMENT == 'development':
     DATABASES = {
         'default': {
@@ -136,6 +136,7 @@ if IS_LOCALHOST or ENVIRONMENT == 'development':
             'PORT': os.getenv('PORT'),
         }
     }
+    print(f"✅ Using LOCAL PostgreSQL database: {os.getenv('DB_NAME')}")
 
 # Test environment
 elif ENVIRONMENT == 'test':
@@ -149,25 +150,35 @@ elif ENVIRONMENT == 'test':
             'PORT': os.getenv('TEST_PORT'),
         }
     }
+    print(f"✅ Using TEST database: {os.getenv('DB_TEST_NAME')}")
 
-# Production (TiDB Cloud)
+# Production (Render/Supabase - PostgreSQL)
 else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': os.getenv('TIDB_DB_NAME'),
-            'USER': os.getenv('TIDB_USER'),
-            'PASSWORD': os.getenv('TIDB_PASSWORD'),
-            'HOST': os.getenv('TIDB_HOST'),
-            'PORT': int(os.getenv('TIDB_PORT', 4000)),
-            'OPTIONS': {
-                'charset': 'utf8mb4',
-                'ssl': {
-                    'ca': os.getenv('TIDB_CA_PATH'),
+    # Try to use DATABASE_URL first (for Render/Supabase)
+    database_url = os.getenv('DATABASE_URL')
+    if database_url:
+        DATABASES['default'] = dj_database_url.config(
+            default=database_url,
+            conn_max_age=600,
+            ssl_require=True
+        )
+        print("✅ Using PostgreSQL via DATABASE_URL (Production)")
+    else:
+        # Fallback to individual PostgreSQL settings
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.getenv('TIDB_DB_NAME'),  # Reuse TiDB env vars or create new ones
+                'USER': os.getenv('TIDB_USER'),
+                'PASSWORD': os.getenv('TIDB_PASSWORD'),
+                'HOST': os.getenv('TIDB_HOST'),
+                'PORT': int(os.getenv('TIDB_PORT', 5432)),
+                'OPTIONS': {
+                    'sslmode': 'require',
                 },
-            },
+            }
         }
-    }
+        print("✅ Using PostgreSQL with individual settings (Production)")
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -186,10 +197,11 @@ USE_TZ = True
 # Static files
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# Logging (unchanged)
+# Logging
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
