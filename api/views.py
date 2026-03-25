@@ -27,7 +27,6 @@ from .filters import *
 from .models import *
 from .resend import send_mail_resend, send_file
 from .serializers import *
-from .serializers import *
 from .tokens import get_tokens_for_user, token_decoder
 from dotenv import load_dotenv
 import os
@@ -729,29 +728,29 @@ class ItemsFilterListView(ListAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class RequestForQoutationDetail(generics.RetrieveUpdateDestroyAPIView):
+class RequestForQuotationDetail(generics.RetrieveUpdateDestroyAPIView):
     """
-    Retrieve, Update or Delete a Request For Qoutation instance
+    Retrieve, Update or Delete a Request For Quotation instance
     """
-    queryset = RequestForQoutation.objects.all()
-    serializer_class = RequestForQoutationSerializer
+    queryset = RequestForQuotation.objects.all()
+    serializer_class = RequestForQuotationSerializer
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
 
-class RequestForQoutationList(generics.ListCreateAPIView):
+class RequestForQuotationList(generics.ListCreateAPIView):
     """
-    List all Request for Qoutation, or create a new Request For Qoutation
+    List all Request for Quotation, or create a new Request For Quotation
     """
-    queryset = RequestForQoutation.objects.all()
-    serializer_class = RequestForQoutationSerializer
+    queryset = RequestForQuotation.objects.all()
+    serializer_class = RequestForQuotationSerializer
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
 
 class ItemQuotationDetail(generics.RetrieveUpdateDestroyAPIView):
     """
-    Retrieve, Update or Delete a Item Qoutation instance
+    Retrieve, Update or Delete a Item Quotation instance
     """
     queryset = ItemQuotation.objects.all()
     serializer_class = ItemQuotationSerializer
@@ -761,7 +760,7 @@ class ItemQuotationDetail(generics.RetrieveUpdateDestroyAPIView):
 
 class ItemQuotationList(generics.ListCreateAPIView):
     """
-    List all Item Quotaion or create a new Item Qoutation
+    List all Item Quotation or create a new Item Quotation
     """
     queryset = ItemQuotation.objects.all()
     serializer_class = ItemQuotationSerializer
@@ -769,22 +768,22 @@ class ItemQuotationList(generics.ListCreateAPIView):
     permission_classes = [IsAuthenticated]
 
 
-class AbstractOfQoutationList(generics.ListCreateAPIView):
+class AbstractOfQuotationList(generics.ListCreateAPIView):
     """
     List all Abstract for Quotation or create new Abstract for Quotation
     """
     queryset = AbstractOfQuotation.objects.all()
-    serializer_class = AbstractOfQoutationSerializer
+    serializer_class = AbstractOfQuotationSerializer
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
 
-class AbstractOfQoutationDetail(generics.RetrieveUpdateDestroyAPIView):
+class AbstractOfQuotationDetail(generics.RetrieveUpdateDestroyAPIView):
     """
     Retrieve, Update or Delete Abstract of Quotation instance
     """
     queryset = AbstractOfQuotation.objects.all()
-    serializer_class = AbstractOfQoutationSerializer
+    serializer_class = AbstractOfQuotationSerializer
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -841,26 +840,6 @@ class SupplierItemDetail(generics.RetrieveUpdateDestroyAPIView):
     """
     queryset = SupplierItem.objects.all()
     serializer_class = SupplierItemSerializer
-    authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated]
-
-
-class BACMemberDetail(generics.RetrieveUpdateDestroyAPIView):
-    """
-    Retrieve, Update or Delete a BACMember instance
-    """
-    queryset = BACMember.objects.all()
-    serializer_class = BACMemberSerializer
-    authentication_classes = [CookieJWTAuthentication]
-    permission_classes = [IsAuthenticated]
-
-
-class BACMemberList(generics.ListCreateAPIView):
-    """
-    List all BACMember or create a new BACMember
-    """
-    queryset = BACMember.objects.all()
-    serializer_class = BACMemberSerializer
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -940,7 +919,7 @@ class BACDailyReportView(APIView):
         )
         # Quotation Data
         quotation = (
-            RequestForQoutation.objects.filter(created_at__gte=seven_days_ago)
+            RequestForQuotation.objects.filter(created_at__gte=seven_days_ago)
             .annotate(day=TruncDate("created_at"))
             .values("day")
             .annotate(total_quotation=Count("rfq_no"))

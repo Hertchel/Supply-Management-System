@@ -28,14 +28,14 @@ urlpatterns = [
     path('purchase-request/<str:pk>/mop-update/', PurchaseRequestMOPUpdateView.as_view()),
     path('purchase-request/<str:pk>/update-status/', PurchaseRequestStatusUpdateView.as_view()),
 
-    path('request-for-qoutation/', RequestForQoutationList.as_view()),
-    path('request-for-qoutation/<str:pk>', RequestForQoutationDetail.as_view()),
+    path('request-for-quotation/', RequestForQuotationList.as_view()),
+    path('request-for-quotation/<str:pk>', RequestForQuotationDetail.as_view()),
 
     path('item-quotation/', ItemQuotationList.as_view()),
     path('item-quotation/<str:pk>', ItemQuotationDetail.as_view()),
 
-    path('abstract-of-quotation/', AbstractOfQoutationList.as_view()),
-    path('abstract-of-quotation/<str:pk>', AbstractOfQoutationDetail.as_view()),
+    path('abstract-of-quotation/', AbstractOfQuotationList.as_view()),
+    path('abstract-of-quotation/<str:pk>', AbstractOfQuotationDetail.as_view()),
 
     path('supplier/', SupplierList.as_view()),
     path('supplier/<str:pk>', SupplierDetail.as_view()),
@@ -56,11 +56,10 @@ urlpatterns = [
     path('items-delivered/<str:pk>/update', DeliveredItemsUpdateView.as_view()),
     path('items-delivered/purchase-request/filter/', DeliveredItemsFilterListView.as_view()),
 
-
     path('stock-items/', StockItemsList.as_view()),
     path('stock-items/<str:pk>', StockItemsDetail.as_view()),
 
-    path('inspection-report/',InspectionAndAcceptanceList.as_view()),
+    path('inspection-report/', InspectionAndAcceptanceList.as_view()),
     path('inspection-report/<str:pk>', InspectionAndAcceptanceDetail.as_view()),
     
     path('requisition-slip/', RequisitionIssueSlipList.as_view()),
