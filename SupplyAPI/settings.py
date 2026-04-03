@@ -67,12 +67,10 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:5173",
     "http://localhost:3000",
     "https://supply-management-system.netlify.app",
-    # ADD YOUR RENDER FRONTEND URL HERE:
-    "https://your-frontend-app.onrender.com",  # <--- REPLACE with your actual frontend URL
+    "https://supply-frontend-react.onrender.com", 
 ]
 
-# FIXED: Add CSRF cookie settings for cross-domain
-CSRF_COOKIE_SECURE = not DEBUG  # True in production
+CSRF_COOKIE_SECURE = not DEBUG  
 CSRF_COOKIE_HTTP_ONLY = False
 CSRF_COOKIE_SAMESITE = 'None' if not DEBUG else 'Lax'
 CSRF_USE_SESSIONS = False
@@ -86,7 +84,8 @@ EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 EMAIL_PORT = os.getenv('EMAIL_PORT')
 EMAIL_USE_TLS = True
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Applications
 INSTALLED_APPS = [
