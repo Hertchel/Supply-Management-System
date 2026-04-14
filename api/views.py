@@ -1112,3 +1112,29 @@ class OfficeListView(generics.ListAPIView):
     queryset = Office.objects.filter(is_active=True)
     serializer_class = OfficeSerializer
     permission_classes = [permissions.IsAuthenticated]
+
+from rest_framework.generics import RetrieveAPIView
+
+class RFQDetailView(APIView):
+    def get(self, request, rfq_no):
+        print("RFQ RECEIVED:", repr(rfq_no))
+
+        rfq = RequestForQuotation.objects.prefetch_related(
+            "item_quotations"
+        ).filter(rfq_no__iexact=rfq_no.strip()).first()
+
+        if not rfq:
+            print("❌ NOT FOUND IN DB")
+            print("Available RFQs:", list(
+                RequestForQuotation.objects.values_list("rfq_no", flat=True)
+            ))
+
+            return Response(
+                {"error": f"RFQ '{rfq_no}' not found"},
+                status=404
+            )
+
+        print("✅ FOUND:", rfq.rfq_no)
+
+        serializer = RequestForQuotationDetailSerializer(rfq)
+        return Response(serializer.data)

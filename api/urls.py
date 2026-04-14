@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import *
+from django.urls import re_path
 
 urlpatterns = [
     path('requisitioner/', RequisitionerList.as_view()),
@@ -69,6 +70,10 @@ urlpatterns = [
     path('daily-report/supply', SupplyDailyReportView.as_view()),
     path('recent-activities/', RecentActivityList.as_view(), name='recent-activities'),
     path('send-file/', SendFileView.as_view(), name='send-file'),
-    path('track-purchase-request/filter/', TrackStatusListView.as_view(), name='track-purchase-request')
+    path('track-purchase-request/filter/', TrackStatusListView.as_view(), name='track-purchase-request'),
+    
+
+    re_path(r"^rfq/(?P<rfq_no>.+)/full/$", RFQDetailView.as_view()),
+    
 
 ]

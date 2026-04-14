@@ -410,3 +410,10 @@ class RequisitionIssueSlipSerializer(serializers.ModelSerializer):
     class Meta:
         model = RequisitionIssueSlip
         fields = '__all__'
+
+class RequestForQuotationDetailSerializer(serializers.ModelSerializer):
+    items = ItemQuotationSerializer(source="item_quotations", many=True, read_only=True)
+
+    class Meta:
+        model = RequestForQuotation
+        fields = '__all__'
