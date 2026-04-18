@@ -72,6 +72,7 @@ urlpatterns = [
     path('send-file/', SendFileView.as_view(), name='send-file'),
     path('track-purchase-request/filter/', TrackStatusListView.as_view(), name='track-purchase-request'),
     
+    path('reviewers/', ReviewerListView.as_view()),
 
     re_path(r"^rfq/(?P<rfq_no>.+)/full/$", RFQDetailView.as_view()),
     

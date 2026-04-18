@@ -37,6 +37,8 @@ class CustomUser(AbstractUser):
     otp_expiration = models.DateTimeField(null=True, blank=True)
     otp_secret = models.CharField(max_length=32, null=True, blank=True)
 
+    is_reviewer = models.BooleanField(default=False)
+
     objects = CustomUserManager()
 
     username = None
