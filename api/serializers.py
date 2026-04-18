@@ -8,7 +8,14 @@ from .models import FundCluster, Office
 from .groups import assign_role_and_save
 from .models import *
 
+from .models import CustomUser
+
 User = get_user_model()
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = ["id", "first_name", "last_name", "email"]
 
 
 class CreateUserSerializer(serializers.ModelSerializer):
