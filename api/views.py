@@ -764,16 +764,61 @@ class ItemQuotationDetail(generics.RetrieveUpdateDestroyAPIView):
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+from .models import Supplier, SupplierItem, AbstractOfQuotation
 
 class ItemQuotationList(generics.ListCreateAPIView):
-    """
-    List all Item Quotation or create a new Item Quotation
-    """
     queryset = ItemQuotation.objects.all()
     serializer_class = ItemQuotationSerializer
     authentication_classes = [CookieJWTAuthentication]
     permission_classes = [IsAuthenticated]
 
+    def perform_create(self, serializer):
+        # 1. Save ItemQuotation
+        item_quotation = serializer.save()
+
+        rfq = item_quotation.rfq
+        pr = item_quotation.purchase_request
+
+        # 2. GET or CREATE AOQ
+        aoq, _ = AbstractOfQuotation.objects.get_or_create(
+            purchase_request=pr,
+            defaults={"aoq_no": f"AOQ-{pr.pr_no}"}
+        )
+
+        # 3. GET or CREATE Supplier
+        supplier, _ = Supplier.objects.get_or_create(
+            rfq=rfq,
+            name=rfq.supplier_name,
+            defaults={
+                "supplier_no": f"S-{rfq.rfq_no}",
+                "address": rfq.supplier_address,
+                "contact_person": "N/A",
+                "contact_number": "N/A",
+                "tin": rfq.tin or "",
+                "aoq": aoq
+            }
+        )
+
+        # 4. CREATE SupplierItem (THIS FIXES AOQ)
+        SupplierItem.objects.create(
+            supplier_item_no=f"SI-{item_quotation.item_quotation_no}",
+            supplier=supplier,
+            rfq=rfq,
+            item_quotation=item_quotation,
+            item_quantity=item_quotation.item.quantity,
+            item_cost=item_quotation.unit_price
+        )
+
+"""
+class ItemQuotationList(generics.ListCreateAPIView):
+  
+    # List all Item Quotation or create a new Item Quotation
+
+    queryset = ItemQuotation.objects.all()
+    serializer_class = ItemQuotationSerializer
+    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [IsAuthenticated]
+"""
 
 class AbstractOfQuotationList(generics.ListCreateAPIView):
     """
