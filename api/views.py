@@ -53,6 +53,9 @@ from django.db import transaction
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
 
 #from .utils import send_otp_email
 from rest_framework.generics import RetrieveAPIView
@@ -65,6 +68,106 @@ load_dotenv()
 
 is_production = os.getenv('IS_PRODUCTION', 'False').lower() == 'true'
 
+
+def generate_ics_number():
+    current_year = timezone.now().year
+
+    with transaction.atomic():
+        sequence, created = ICSNumberSequence.objects.select_for_update().get_or_create(
+            year=current_year,
+            defaults={"last_number": 0}
+        )
+
+        sequence.last_number += 1
+        sequence.save(update_fields=["last_number"])
+
+        return f"ICS-{current_year}-{sequence.last_number:04d}"
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def create_inventory_custodian_slip(request):
+    purchase_order_id = request.data.get("purchase_order")
+    delivered_items = request.data.get("delivered_items", [])
+
+    if not purchase_order_id:
+        return Response(
+            {"error": "Purchase order is required."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if not delivered_items:
+        return Response(
+            {"error": "At least one delivered item is required."},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        purchase_order = PurchaseOrder.objects.get(
+            po_no=purchase_order_id
+        )
+    except PurchaseOrder.DoesNotExist:
+        return Response(
+            {"error": "Purchase order does not exist."},
+            status=status.HTTP_404_NOT_FOUND
+        )
+
+    with transaction.atomic():
+
+        ics_no = generate_ics_number()
+
+        ics = InventoryCustodianSlip.objects.create(
+            ics_no=ics_no,
+            purchase_order=purchase_order,
+            created_by=request.user
+        )
+
+        for item in delivered_items:
+
+            delivered_item_id = item.get("delivered_item")
+            quantity = item.get("quantity")
+
+            if not delivered_item_id:
+                raise serializers.ValidationError(
+                    "Delivered item is required."
+                )
+
+            if not quantity:
+                raise serializers.ValidationError(
+                    "Quantity is required."
+                )
+
+            try:
+                delivered_item = DeliveredItems.objects.get(
+                    delivery_id=delivered_item_id
+                )
+            except DeliveredItems.DoesNotExist:
+                raise serializers.ValidationError(
+                    f"Delivered item '{delivered_item_id}' does not exist."
+                )
+
+            if quantity <= 0:
+                raise serializers.ValidationError(
+                    "Quantity must be greater than 0."
+                )
+
+            if quantity > delivered_item.quantity_delivered:
+                raise serializers.ValidationError(
+                    f"Quantity for {delivered_item_id} cannot exceed "
+                    f"the delivered quantity of {delivered_item.quantity_delivered}."
+                )
+
+            ICSItem.objects.create(
+                ics=ics,
+                delivered_item=delivered_item,
+                quantity=quantity
+            )
+
+    serializer = InventoryCustodianSlipSerializer(ics)
+
+    return Response(
+        serializer.data,
+        status=status.HTTP_201_CREATED
+    )
 
 class RegisterUserAPIView(generics.CreateAPIView):
     """

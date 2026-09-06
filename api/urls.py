@@ -68,6 +68,8 @@ urlpatterns = [
 
     path('inspection-report/', InspectionAndAcceptanceList.as_view()),
     path('inspection-report/<str:pk>', InspectionAndAcceptanceDetail.as_view()),
+
+    path("inventory-custodian-slips/create/", create_inventory_custodian_slip,),
     
     path('requisition-slip/', RequisitionIssueSlipList.as_view()),
     path('requisition-slip/<str:pk>', RequisitionIssueSlipDetail.as_view()),

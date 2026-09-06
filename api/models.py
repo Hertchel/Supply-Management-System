@@ -377,6 +377,56 @@ class DeliveredItems(models.Model):
     def __str__(self):
         return f'{self.purchase_request.pr_no} - {self.delivery_id}'
 
+class ICSNumberSequence(models.Model):
+    year = models.PositiveIntegerField(unique=True)
+    last_number = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"ICS {self.year} - {self.last_number}"
+
+class InventoryCustodianSlip(models.Model):
+    ics_no = models.CharField(max_length=50, unique=True)
+    purchase_order = models.ForeignKey(
+        PurchaseOrder,
+        on_delete=models.PROTECT,
+        related_name="inventory_custodian_slips"
+    )
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="created_ics"
+    )
+    date_issued = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.ics_no
+
+
+class ICSItem(models.Model):
+    ics = models.ForeignKey(
+        InventoryCustodianSlip,
+        on_delete=models.CASCADE,
+        related_name="items"
+    )
+    delivered_item = models.ForeignKey(
+        DeliveredItems,
+        on_delete=models.PROTECT,
+        related_name="ics_items"
+    )
+    quantity = models.PositiveIntegerField()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["ics", "delivered_item"],
+                name="unique_ics_delivered_item"
+            )
+        ]
+
+    def __str__(self):
+        return f"{self.ics.ics_no} - {self.delivered_item.delivery_id}"
+
 
 class StockItems(models.Model):
     stock_id = models.CharField(max_length=50, primary_key=True)

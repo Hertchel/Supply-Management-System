@@ -798,6 +798,66 @@ class DeliveredItemsSerializer(serializers.ModelSerializer):
             'item_details': {'read_only': True}
         }
 
+class ICSItemSerializer(serializers.ModelSerializer):
+    delivered_item = serializers.PrimaryKeyRelatedField(
+        queryset=DeliveredItems.objects.all(),
+        write_only=True
+    )
+
+    delivered_item_details = DeliveredItemsSerializer(
+        source='delivered_item',
+        read_only=True
+    )
+
+    class Meta:
+        model = ICSItem
+        fields = '__all__'
+        extra_kwargs = {
+            'ics': {'write_only': True},
+            'delivered_item': {'write_only': True},
+            'delivered_item_details': {'read_only': True},
+        }
+
+
+class InventoryCustodianSlipSerializer(serializers.ModelSerializer):
+    purchase_order = serializers.PrimaryKeyRelatedField(
+        queryset=PurchaseOrder.objects.all(),
+        write_only=True
+    )
+
+    purchase_order_details = PurchaseOrderSerializer(
+        source='purchase_order',
+        read_only=True
+    )
+
+    created_by = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all(),
+        write_only=True
+    )
+
+    created_by_details = UserSerializer(
+        source='created_by',
+        read_only=True
+    )
+
+    items = ICSItemSerializer(
+        many=True,
+        read_only=True
+    )
+
+    class Meta:
+        model = InventoryCustodianSlip
+        fields = '__all__'
+        extra_kwargs = {
+            'ics_no': {'read_only': True},
+            'purchase_order': {'write_only': True},
+            'purchase_order_details': {'read_only': True},
+            'created_by': {'write_only': True},
+            'created_by_details': {'read_only': True},
+            'date_issued': {'read_only': True},
+            'created_at': {'read_only': True},
+            'items': {'read_only': True},
+        }
 
 class StockItemsSerializer(serializers.ModelSerializer):
     inspection = serializers.PrimaryKeyRelatedField(queryset=InspectionAndAcceptance.objects.all(), write_only=True)
